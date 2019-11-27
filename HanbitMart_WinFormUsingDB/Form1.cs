@@ -18,14 +18,16 @@ namespace HanbitMart_WinFormUsingDB
             InitializeComponent();
         }
 
+        // DB 연결 객체, DB 연결 통로(adapters), DB 세터(dataSet)와 
+        // 선택한 행의 인덱스, 선택한 탭의 이름, 탭을 총괄 관리하는 배열 선언
         MySqlConnection conn;
         MySqlDataAdapter adapter, adapter2, adapter3;
         DataSet dataSet;
         int IndexOfSelectedRow;
         string NameOfSelectedTab;
-
         string[] Tables = { "고객", "제품", "주문" };
 
+        // 창이 로딩될 시 작동하는 함수
         private void Form1_Load(object sender, EventArgs e)
         {
             // 각 테이블에 담긴 초기 데이터를 각 테이블에 맞는 DataView에 뿌리고
@@ -50,36 +52,7 @@ namespace HanbitMart_WinFormUsingDB
             Setting("고객"); Setting("제품"); Setting("주문");
         }
 
-        /*public void sort_Table(string currentTab)
-        {
-            if (NameOfSelectedTab == "고객")
-            {
-                areaDB.Columns["고객아이디"].DisplayIndex = 0;
-                areaDB.Columns["고객이름"].DisplayIndex = 1;
-                areaDB.Columns["나이"].DisplayIndex = 2;
-                areaDB.Columns["등급"].DisplayIndex = 3;
-                areaDB.Columns["직업"].DisplayIndex = 4;
-                areaDB.Columns["적립금"].DisplayIndex = 5;
-            }
-            else if (NameOfSelectedTab == "제품")
-            {
-                areaDB.Columns["제품번호"].DisplayIndex = 0;
-                areaDB.Columns["제품명"].DisplayIndex = 1;
-                areaDB.Columns["재고량"].DisplayIndex = 2;
-                areaDB.Columns["단가"].DisplayIndex = 3;
-                areaDB.Columns["제조업체"].DisplayIndex = 4;
-            }
-            else if (NameOfSelectedTab == "주문")
-            {
-                areaDB.Columns["주문번호"].DisplayIndex = 0;
-                areaDB.Columns["주문고객"].DisplayIndex = 1;
-                areaDB.Columns["제품번호"].DisplayIndex = 2;
-                areaDB.Columns["수량"].DisplayIndex = 3;
-                areaDB.Columns["배송지"].DisplayIndex = 4;
-                areaDB.Columns["주문일자"].DisplayIndex = 5;
-            }
-        }*/
-
+        // 탭 컨트롤에서 선택한 탭이 바뀌었을 경우 수행할 코드를 작성한 함수
         private void ManagementTab_SelectedIndexChanged(object sender, EventArgs e)
         {
             NameOfSelectedTab = ManagementTab.SelectedTab.Text;
@@ -112,6 +85,7 @@ namespace HanbitMart_WinFormUsingDB
             //sort_Table(NameOfSelectedTab);
         }
 
+        // 각각의 탭 컨트롤에서 특정 컬럼을 뽑아서 ComboBox에 나열
         private void Setting(string currentTab)
         {
             try
@@ -193,6 +167,8 @@ namespace HanbitMart_WinFormUsingDB
             }
         }
 
+        // 각 테이블에서 새로운 데이터가 삽입(INSERT), 기존의 데이터가 수정(UPDATE)
+        // 기존의 데이터가 삭제(DELETE) 되었을 때 ComboBox의 내용을 변경된 내용으로 갱신
         private void ComboBox_ReSetting(string currentTab)
         {
             if (currentTab == "고객")
@@ -215,6 +191,7 @@ namespace HanbitMart_WinFormUsingDB
             }
         }
 
+        // 고객 탭에서 SELECT 버튼을 눌렀을 경우 실행
         private void cusSelectBtn_Click(object sender, EventArgs e)
         {
             string queryString;
@@ -288,6 +265,7 @@ namespace HanbitMart_WinFormUsingDB
             }
         }
 
+        // 제품 탭에서 SELECT 버튼을 눌렀을 경우 실행
         private void proSelectBtn_Click(object sender, EventArgs e)
         {
             string queryString;
@@ -367,6 +345,7 @@ namespace HanbitMart_WinFormUsingDB
             }
         }
 
+        // 주문 탭에서 SELECT 버튼을 눌렀을 경우 실행
         private void ordSelectBtn_Click(object sender, EventArgs e)
         {
             string queryString;
@@ -440,6 +419,8 @@ namespace HanbitMart_WinFormUsingDB
             }
         }
 
+        // 각 탭에서 CellClick 함수나 Others 버튼으로 Form2를 실행하고
+        // Form2에서 Insert 버튼을 눌렀을 경우
         public void InsertRow(string[] rowDatas, string NameOfSelectedTab) 
         {
             string queryString;
@@ -551,6 +532,8 @@ namespace HanbitMart_WinFormUsingDB
             ComboBox_ReSetting(NameOfSelectedTab);
         }
 
+        // 각 탭에서 CellClick 함수나 Others 버튼으로 Form2를 실행하고
+        // Form2에서 Update 버튼을 눌렀을 경우
         public void UpdateRow(string[] rowDatas, string NameOfSelectedTab)
         {
             string queryString;
@@ -628,6 +611,8 @@ namespace HanbitMart_WinFormUsingDB
             ComboBox_ReSetting(NameOfSelectedTab);
         }
 
+        // 각 탭에서 CellClick 함수나 Others 버튼으로 Form2를 실행하고
+        // Form2에서 Delete 버튼을 눌렀을 경우
         public void DeleteRow(string PrimaryKey, string NameOfSelectedTab)
         {
             string queryString;
@@ -690,7 +675,8 @@ namespace HanbitMart_WinFormUsingDB
             }
             ComboBox_ReSetting(NameOfSelectedTab);
         }
-
+        
+        // 고객 탭에서 Others 버튼을 클릭할 경우
         private void cusOthersBtn_Click(object sender, EventArgs e)
         {
             
@@ -700,6 +686,7 @@ namespace HanbitMart_WinFormUsingDB
             modalForm.Dispose();
         }
 
+        // 제품 탭에서 Others 버튼을 클릭할 경우
         private void proOthersBtn_Click(object sender, EventArgs e)
         {
             Form2 modalForm = new Form2("제품");
@@ -708,6 +695,7 @@ namespace HanbitMart_WinFormUsingDB
             modalForm.Dispose();
         }
 
+        // 주문 탭에서 Others 버튼을 클릭할 경우
         private void ordOthersBtn_Click(object sender, EventArgs e)
         {
             Form2 modalForm = new Form2("주문");
@@ -716,6 +704,8 @@ namespace HanbitMart_WinFormUsingDB
             modalForm.Dispose();
         }
 
+        // 데이터 뷰(areaDB, DataGridView)에서 셀을 클릭할 시
+        // 그 탭의 이름(DB의 이름과 같음)과 선택한 행의 데이터를 Form2 실행과 동시에 전달
         private void areaDB_CellClick(object sender, DataGridViewCellEventArgs e)
         {
             IndexOfSelectedRow = e.RowIndex;
@@ -760,6 +750,7 @@ namespace HanbitMart_WinFormUsingDB
             modalForm.Dispose();
         }
 
+        // 고객 탭에서 Clear 버튼을 눌렀을 경우 (텍스트박스, 콤보박스 초기화)
         private void cusClearBtn_Click(object sender, EventArgs e)
         {
             cusIdBox.Clear();
@@ -771,6 +762,7 @@ namespace HanbitMart_WinFormUsingDB
             cusAccumulationBox_max.Clear();
         }
 
+        // 제품 탭에서 Clear 버튼을 눌렀을 경우 (텍스트박스, 콤보박스 초기화)
         private void proClearBtn_Click(object sender, EventArgs e)
         {
             proProductNumberComboBox.Text = "";
@@ -782,6 +774,7 @@ namespace HanbitMart_WinFormUsingDB
             proManufacturerComboBox.Text = "";
         }
 
+        // 주문 탭에서 Clear 버튼을 눌렀을 경우 (텍스트박스, 콤보박스 초기화)
         private void ordClearBtn_Click(object sender, EventArgs e)
         {
             ordOrderNumberBox.Clear();

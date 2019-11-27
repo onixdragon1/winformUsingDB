@@ -151,6 +151,8 @@ namespace HanbitMart_WinFormUsingDB
             }
         }
 
+        // Form2의 텍스트박스가 비어있는지 확인하는 함수
+        // 비어있다면 이전의 데이터를 받아와서 삽입, 수정할 시 데이터 손실 방지
         public string[] IfTextBoxIsBlank(string[] data, string currentTab)
         {
             if(currentTab == "고객")
@@ -182,6 +184,7 @@ namespace HanbitMart_WinFormUsingDB
             return data;
         }
 
+        // Form2에서 Insert 버튼을 눌렀을 경우
         private void btnInsert_Click(object sender, EventArgs e)
         {
             if (NameOfSelectedTab == "고객")
@@ -226,6 +229,7 @@ namespace HanbitMart_WinFormUsingDB
             }
         }
 
+        // Form2에서 Update 버튼을 눌렀을 경우
         private void btnUpdate_Click(object sender, EventArgs e)
         {
             if (NameOfSelectedTab == "고객")
@@ -271,6 +275,7 @@ namespace HanbitMart_WinFormUsingDB
             }
         }
 
+        // Form2에서 Delete 버튼을 눌렀을 경우
         private void btnDelete_Click(object sender, EventArgs e)
         {
             if(NameOfSelectedTab == "고객")
