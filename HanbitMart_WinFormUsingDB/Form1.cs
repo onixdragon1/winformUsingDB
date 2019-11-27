@@ -24,6 +24,8 @@ namespace HanbitMart_WinFormUsingDB
         int IndexOfSelectedRow;
         string NameOfSelectedTab;
 
+        string[] Tables = { "고객", "제품", "주문" };
+
         private void Form1_Load(object sender, EventArgs e)
         {
             // 각 테이블에 담긴 초기 데이터를 각 테이블에 맞는 DataView에 뿌리고
@@ -35,31 +37,79 @@ namespace HanbitMart_WinFormUsingDB
             adapter = new MySqlDataAdapter("SELECT * FROM 고객", conn);
             adapter.Fill(dataSet, "고객");
 
-            adapter = new MySqlDataAdapter("SELECT * FROM 제품", conn);
-            adapter.Fill(dataSet, "제품");
+            adapter2 = new MySqlDataAdapter("SELECT * FROM 제품", conn);
+            adapter2.Fill(dataSet, "제품");
 
-            adapter = new MySqlDataAdapter("SELECT * FROM 주문", conn);
-            adapter.Fill(dataSet, "주문");
+            adapter3 = new MySqlDataAdapter("SELECT * FROM 주문", conn);
+            adapter3.Fill(dataSet, "주문");
             
-            customerDataView.DataSource = dataSet.Tables["고객"]; 
-            productDataView.DataSource = dataSet.Tables["제품"];
-            orderDataView.DataSource = dataSet.Tables["주문"];
+            areaDB.DataSource = dataSet.Tables["고객"]; 
+            //areaDB.DataSource = dataSet.Tables["제품"];
+            //areaDB.DataSource = dataSet.Tables["주문"];
             
             Setting("고객"); Setting("제품"); Setting("주문");
         }
 
+        /*public void sort_Table(string currentTab)
+        {
+            if (NameOfSelectedTab == "고객")
+            {
+                areaDB.Columns["고객아이디"].DisplayIndex = 0;
+                areaDB.Columns["고객이름"].DisplayIndex = 1;
+                areaDB.Columns["나이"].DisplayIndex = 2;
+                areaDB.Columns["등급"].DisplayIndex = 3;
+                areaDB.Columns["직업"].DisplayIndex = 4;
+                areaDB.Columns["적립금"].DisplayIndex = 5;
+            }
+            else if (NameOfSelectedTab == "제품")
+            {
+                areaDB.Columns["제품번호"].DisplayIndex = 0;
+                areaDB.Columns["제품명"].DisplayIndex = 1;
+                areaDB.Columns["재고량"].DisplayIndex = 2;
+                areaDB.Columns["단가"].DisplayIndex = 3;
+                areaDB.Columns["제조업체"].DisplayIndex = 4;
+            }
+            else if (NameOfSelectedTab == "주문")
+            {
+                areaDB.Columns["주문번호"].DisplayIndex = 0;
+                areaDB.Columns["주문고객"].DisplayIndex = 1;
+                areaDB.Columns["제품번호"].DisplayIndex = 2;
+                areaDB.Columns["수량"].DisplayIndex = 3;
+                areaDB.Columns["배송지"].DisplayIndex = 4;
+                areaDB.Columns["주문일자"].DisplayIndex = 5;
+            }
+        }*/
+
         private void ManagementTab_SelectedIndexChanged(object sender, EventArgs e)
         {
             NameOfSelectedTab = ManagementTab.SelectedTab.Text;
-            adapter = new MySqlDataAdapter("SELECT * FROM "+NameOfSelectedTab, conn);
-            dataSet.Clear();
-            adapter.Fill(dataSet, NameOfSelectedTab);
             if (NameOfSelectedTab == "고객")
-                customerDataView.DataSource = dataSet.Tables[NameOfSelectedTab];
+            {
+                dataSet.Tables[NameOfSelectedTab].Clear();  // 선택한 테이블의 이전 데이터 지우기
+                adapter.Fill(dataSet, NameOfSelectedTab);
+            }
             else if (NameOfSelectedTab == "제품")
-                productDataView.DataSource = dataSet.Tables[NameOfSelectedTab];
+            {
+                dataSet.Tables[NameOfSelectedTab].Clear();   // 선택한 테이블의 이전 데이터 지우기
+                adapter2.Fill(dataSet, NameOfSelectedTab);
+            }
             else if (NameOfSelectedTab == "주문")
-                orderDataView.DataSource = dataSet.Tables[NameOfSelectedTab];
+            {
+                dataSet.Tables[NameOfSelectedTab].Clear();   // 선택한 테이블의 이전 데이터 지우기
+                adapter3.Fill(dataSet, NameOfSelectedTab);
+            }
+            for (int i = 0; i < Tables.Length; i++)
+            {
+                if(NameOfSelectedTab == Tables[i].ToString())
+                    areaDB.DataSource = dataSet.Tables[NameOfSelectedTab];
+            }
+            if (NameOfSelectedTab == "주문")
+            {
+                areaDB.Columns["주문번호"].DisplayIndex = 0;
+                areaDB.Columns["주문고객"].DisplayIndex = 1;
+                areaDB.Columns["제품번호"].DisplayIndex = 2;
+            }
+            //sort_Table(NameOfSelectedTab);
         }
 
         private void Setting(string currentTab)
@@ -169,7 +219,7 @@ namespace HanbitMart_WinFormUsingDB
         {
             string queryString;
 
-            string[] options = new string[customerDataView.Columns.Count];
+            string[] options = new string[6];
             options[0] = (cusIdBox.Text != "") ? "고객아이디=@고객아이디" : null;
             options[1] = (cusNameBox.Text != "") ? "고객이름=@고객이름" : null;
             options[2] = (cusAgeBox.Text != "") ? "나이=@나이" : null;
@@ -205,7 +255,7 @@ namespace HanbitMart_WinFormUsingDB
                             queryString += options[i];
                             firstOption = false;
                         }
-                        else queryString += "and " + options[i];
+                        else queryString += " and " + options[i];
                     }
                 }
             }
@@ -223,9 +273,9 @@ namespace HanbitMart_WinFormUsingDB
             try
             {
                 conn.Open();
-                dataSet.Clear();
+                dataSet.Tables["고객"].Clear();
                 if (adapter.Fill(dataSet, "고객") > 0)
-                    customerDataView.DataSource = dataSet.Tables["고객"];
+                    areaDB.DataSource = dataSet.Tables["고객"];
                 else MessageBox.Show("찾는 데이터가 엄서용!");
             }
             catch(Exception ex)
@@ -242,15 +292,24 @@ namespace HanbitMart_WinFormUsingDB
         {
             string queryString;
 
-            string[] options = new string[productDataView.Columns.Count];
+            string[] options = new string[5];
             options[0] = (proProductNumberComboBox.Text != "") ? "제품번호=@제품번호" : null;
             options[1] = (proProductNameBox.Text != "") ? "제품명=@제품명" : null;
-            options[2] = (proStockBox_min.Text != "") ? "재고량=@재고량" : null;
+            string options_Stock;
+            if (proStockBox_min.Text != "" && proStockBox_max.Text != "")
+                options_Stock = "재고량>=@Stock_min and 재고량<=@Stock_max";
+            else if (proStockBox_min.Text != "" || proStockBox_max.Text != "")
+            {
+                if (proStockBox_min.Text != "")
+                    options_Stock = "재고량>=@Price_min";
+                else options_Stock = "재고량<=@Price_max";
+            }
+            else 
+                options_Stock = null;
+            options[2] = options_Stock;
             string options_Price;
             if (proPriceBox_min.Text != "" && proPriceBox_max.Text != "")
-            {
                 options_Price = "단가>=@Price_min and 단가<=@Price_max";
-            }
             else if (proPriceBox_min.Text != "" || proPriceBox_max.Text != "")
             {
                 if (proPriceBox_min.Text != "")
@@ -258,9 +317,7 @@ namespace HanbitMart_WinFormUsingDB
                 else options_Price = "단가<=@Price_max";
             }
             else
-            {
                 options_Price = null;
-            }
             options[3] = options_Price;
             options[4] = (proManufacturerComboBox.Text != "") ? "제조업체=@제조업체" : null;
 
@@ -277,26 +334,27 @@ namespace HanbitMart_WinFormUsingDB
                             queryString += options[i];
                             firstOption = false;
                         }
-                        else queryString += "and " + options[i];
+                        else queryString += " and " + options[i];
                     }
                 }
             }
             else queryString = "SELECT * FROM 제품";
 
-            adapter.SelectCommand = new MySqlCommand(queryString, conn);
-            adapter.SelectCommand.Parameters.AddWithValue("@제품번호", proProductNumberComboBox.Text);
-            adapter.SelectCommand.Parameters.AddWithValue("@제품명", proProductNameBox.Text);
-            adapter.SelectCommand.Parameters.AddWithValue("@재고량", proStockBox_min.Text);
-            adapter.SelectCommand.Parameters.AddWithValue("@제조업체", proManufacturerComboBox.Text);
-            adapter.SelectCommand.Parameters.AddWithValue("@Price_min", proPriceBox_min.Text);
-            adapter.SelectCommand.Parameters.AddWithValue("@Price_max", proPriceBox_max.Text);
+            adapter2.SelectCommand = new MySqlCommand(queryString, conn);
+            adapter2.SelectCommand.Parameters.AddWithValue("@제품번호", proProductNumberComboBox.Text);
+            adapter2.SelectCommand.Parameters.AddWithValue("@제품명", proProductNameBox.Text);
+            adapter2.SelectCommand.Parameters.AddWithValue("@Stock_min", proStockBox_min.Text);
+            adapter2.SelectCommand.Parameters.AddWithValue("@Stock_max", proStockBox_max.Text);
+            adapter2.SelectCommand.Parameters.AddWithValue("@제조업체", proManufacturerComboBox.Text);
+            adapter2.SelectCommand.Parameters.AddWithValue("@Price_min", proPriceBox_min.Text);
+            adapter2.SelectCommand.Parameters.AddWithValue("@Price_max", proPriceBox_max.Text);
 
             try
             {
                 conn.Open();
-                dataSet.Clear();
-                if (adapter.Fill(dataSet, "제품") > 0)
-                    customerDataView.DataSource = dataSet.Tables["제품"];
+                dataSet.Tables["제품"].Clear();
+                if (adapter2.Fill(dataSet, "제품") > 0)
+                    areaDB.DataSource = dataSet.Tables["제품"];
                 else MessageBox.Show("찾는 데이터가 엄서용!");
             }
             catch (Exception ex)
@@ -313,7 +371,7 @@ namespace HanbitMart_WinFormUsingDB
         {
             string queryString;
 
-            string[] options = new string[orderDataView.Columns.Count];
+            string[] options = new string[6];
             options[0] = (ordOrderNumberBox.Text != "") ? "주문번호=@주문번호" : null;
             options[1] = (ordCustomerBox.Text != "") ? "주문고객=@주문고객" : null;
             options[2] = (ordProductNumberComboBox.Text != "") ? "제품번호=@제품번호" : null;
@@ -349,27 +407,27 @@ namespace HanbitMart_WinFormUsingDB
                             queryString += options[i];
                             firstOption = false;
                         }
-                        else queryString += "and " + options[i];
+                        else queryString += " and " + options[i];
                     }
                 }
             }
             else queryString = "SELECT * FROM 주문";
 
-            adapter.SelectCommand = new MySqlCommand(queryString, conn);
-            adapter.SelectCommand.Parameters.AddWithValue("@주문번호", ordOrderNumberBox.Text);
-            adapter.SelectCommand.Parameters.AddWithValue("@주문고객", ordCustomerBox.Text);
-            adapter.SelectCommand.Parameters.AddWithValue("@제품번호", ordProductNumberComboBox.Text);
-            adapter.SelectCommand.Parameters.AddWithValue("@배송지", ordDestinationBox.Text);
-            adapter.SelectCommand.Parameters.AddWithValue("@주문일자", ordOrderDateComboBox.Text);
-            adapter.SelectCommand.Parameters.AddWithValue("@Quantity_min", ordQuantityBox_min.Text);
-            adapter.SelectCommand.Parameters.AddWithValue("@Quantity_max", ordQuantityBox_max.Text);
+            adapter3.SelectCommand = new MySqlCommand(queryString, conn);
+            adapter3.SelectCommand.Parameters.AddWithValue("@주문번호", ordOrderNumberBox.Text);
+            adapter3.SelectCommand.Parameters.AddWithValue("@주문고객", ordCustomerBox.Text);
+            adapter3.SelectCommand.Parameters.AddWithValue("@제품번호", ordProductNumberComboBox.Text);
+            adapter3.SelectCommand.Parameters.AddWithValue("@배송지", ordDestinationBox.Text);
+            adapter3.SelectCommand.Parameters.AddWithValue("@주문일자", ordOrderDateComboBox.Text);
+            adapter3.SelectCommand.Parameters.AddWithValue("@Quantity_min", ordQuantityBox_min.Text);
+            adapter3.SelectCommand.Parameters.AddWithValue("@Quantity_max", ordQuantityBox_max.Text);
 
             try
             {
                 conn.Open();
-                dataSet.Clear();
-                if (adapter.Fill(dataSet, "주문") > 0)
-                    customerDataView.DataSource = dataSet.Tables["주문"];
+                dataSet.Tables["주문"].Clear();
+                if (adapter3.Fill(dataSet, "주문") > 0)
+                    areaDB.DataSource = dataSet.Tables["주문"];
                 else MessageBox.Show("찾는 데이터가 엄서용!");
             }
             catch (Exception ex)
@@ -380,71 +438,6 @@ namespace HanbitMart_WinFormUsingDB
             {
                 conn.Close();
             }
-        }
-
-        private void customerDataView_CellClick(object sender, DataGridViewCellEventArgs e)
-        {
-            IndexOfSelectedRow = e.RowIndex;
-            DataGridViewRow rows = customerDataView.Rows[IndexOfSelectedRow];
-
-            Form2 modalForm = new Form2(
-                IndexOfSelectedRow,
-                ManagementTab.SelectedTab.Text,
-                rows.Cells[0].Value.ToString(),
-                rows.Cells[1].Value.ToString(),
-                rows.Cells[2].Value.ToString(),
-                rows.Cells[3].Value.ToString(),
-                rows.Cells[4].Value.ToString(),
-                rows.Cells[5].Value.ToString()
-                )
-            {
-                Owner = this
-            };
-            modalForm.ShowDialog();
-            modalForm.Dispose();
-        }
-
-        private void productDataView_CellClick(object sender, DataGridViewCellEventArgs e)
-        {
-            IndexOfSelectedRow = e.RowIndex;
-            DataGridViewRow rows = productDataView.Rows[IndexOfSelectedRow];
-
-            Form2 modalForm = new Form2(
-                IndexOfSelectedRow,
-                ManagementTab.SelectedTab.Text,
-                rows.Cells[0].Value.ToString(),
-                rows.Cells[1].Value.ToString(),
-                rows.Cells[2].Value.ToString(),
-                rows.Cells[3].Value.ToString(),
-                rows.Cells[4].Value.ToString()
-                )
-            {
-                Owner = this
-            };
-            modalForm.ShowDialog();
-            modalForm.Dispose();
-        }
-        
-        private void orderDataView_CellClick(object sender, DataGridViewCellEventArgs e)
-        {
-            IndexOfSelectedRow = e.RowIndex;
-            DataGridViewRow rows = orderDataView.Rows[IndexOfSelectedRow];
-
-            Form2 modalForm = new Form2(
-                IndexOfSelectedRow,
-                ManagementTab.SelectedTab.Text,
-                rows.Cells[0].Value.ToString(),
-                rows.Cells[1].Value.ToString(),
-                rows.Cells[2].Value.ToString(),
-                rows.Cells[3].Value.ToString(),
-                rows.Cells[4].Value.ToString(),
-                rows.Cells[5].Value.ToString()
-                )
-            {
-                Owner = this
-            };
-            modalForm.ShowDialog();
-            modalForm.Dispose();
         }
 
         public void InsertRow(string[] rowDatas, string NameOfSelectedTab) 
@@ -475,56 +468,74 @@ namespace HanbitMart_WinFormUsingDB
             {
                 // INSERT 쿼리 사용을 위해 선언하고 데이터 타입 지정
                 queryString = "INSERT INTO 제품 VALUES(@제품번호, @제품명, @재고량, @단가, @제조업체)";
-                adapter.InsertCommand = new MySqlCommand(queryString, conn);
-                adapter.InsertCommand.Parameters.Add("@제품번호", MySqlDbType.VarChar);
-                adapter.InsertCommand.Parameters.Add("@제품명", MySqlDbType.VarChar);
-                adapter.InsertCommand.Parameters.Add("@재고량", MySqlDbType.Int32);
-                adapter.InsertCommand.Parameters.Add("@단가", MySqlDbType.Int32);
-                adapter.InsertCommand.Parameters.Add("@제조업체", MySqlDbType.VarChar);
+                adapter2.InsertCommand = new MySqlCommand(queryString, conn);
+                adapter2.InsertCommand.Parameters.Add("@제품번호", MySqlDbType.VarChar);
+                adapter2.InsertCommand.Parameters.Add("@제품명", MySqlDbType.VarChar);
+                adapter2.InsertCommand.Parameters.Add("@재고량", MySqlDbType.Int32);
+                adapter2.InsertCommand.Parameters.Add("@단가", MySqlDbType.Int32);
+                adapter2.InsertCommand.Parameters.Add("@제조업체", MySqlDbType.VarChar);
 
                 #region Parameters를 이용한 데이터 삽입 처리
-                adapter.InsertCommand.Parameters["@제품번호"].Value = rowDatas[0];
-                adapter.InsertCommand.Parameters["@제품명"].Value = rowDatas[1];
-                adapter.InsertCommand.Parameters["@재고량"].Value = Convert.ToInt32(rowDatas[2]);
-                adapter.InsertCommand.Parameters["@단가"].Value = Convert.ToInt32(rowDatas[3]);
-                adapter.InsertCommand.Parameters["@제조업체"].Value = rowDatas[4];
+                adapter2.InsertCommand.Parameters["@제품번호"].Value = rowDatas[0];
+                adapter2.InsertCommand.Parameters["@제품명"].Value = rowDatas[1];
+                adapter2.InsertCommand.Parameters["@재고량"].Value = Convert.ToInt32(rowDatas[2]);
+                adapter2.InsertCommand.Parameters["@단가"].Value = Convert.ToInt32(rowDatas[3]);
+                adapter2.InsertCommand.Parameters["@제조업체"].Value = rowDatas[4];
                 #endregion
             }
             else if (NameOfSelectedTab == "주문")
             {
                 // INSERT 쿼리 사용을 위해 선언하고 데이터 타입 지정
                 queryString = "INSERT INTO 주문 VALUES(@주문번호, @주문고객, @제품번호, @수량, @배송지, @주문일자)";
-                adapter.InsertCommand = new MySqlCommand(queryString, conn);
-                adapter.InsertCommand.Parameters.Add("@주문번호", MySqlDbType.VarChar);
-                adapter.InsertCommand.Parameters.Add("@주문고객", MySqlDbType.VarChar);
-                adapter.InsertCommand.Parameters.Add("@제품번호", MySqlDbType.VarChar);
-                adapter.InsertCommand.Parameters.Add("@수량", MySqlDbType.Int32);
-                adapter.InsertCommand.Parameters.Add("@배송지", MySqlDbType.VarChar);
-                adapter.InsertCommand.Parameters.Add("@주문일자", MySqlDbType.Date);
+                adapter3.InsertCommand = new MySqlCommand(queryString, conn);
+                adapter3.InsertCommand.Parameters.Add("@주문번호", MySqlDbType.VarChar);
+                adapter3.InsertCommand.Parameters.Add("@주문고객", MySqlDbType.VarChar);
+                adapter3.InsertCommand.Parameters.Add("@제품번호", MySqlDbType.VarChar);
+                adapter3.InsertCommand.Parameters.Add("@수량", MySqlDbType.Int32);
+                adapter3.InsertCommand.Parameters.Add("@배송지", MySqlDbType.VarChar);
+                adapter3.InsertCommand.Parameters.Add("@주문일자", MySqlDbType.Date);
 
                 #region Parameters를 이용한 데이터 삽입 처리
-                adapter.InsertCommand.Parameters["@주문번호"].Value = rowDatas[0];
-                adapter.InsertCommand.Parameters["@주문고객"].Value = rowDatas[1];
-                adapter.InsertCommand.Parameters["@제품번호"].Value = rowDatas[2];
-                adapter.InsertCommand.Parameters["@수량"].Value = Convert.ToInt32(rowDatas[3]);
-                adapter.InsertCommand.Parameters["@배송지"].Value = rowDatas[4];
-                adapter.InsertCommand.Parameters["@주문일자"].Value = rowDatas[5];
+                adapter3.InsertCommand.Parameters["@주문번호"].Value = rowDatas[0];
+                adapter3.InsertCommand.Parameters["@주문고객"].Value = rowDatas[1];
+                adapter3.InsertCommand.Parameters["@제품번호"].Value = rowDatas[2];
+                adapter3.InsertCommand.Parameters["@수량"].Value = Convert.ToInt32(rowDatas[3]);
+                adapter3.InsertCommand.Parameters["@배송지"].Value = rowDatas[4];
+                adapter3.InsertCommand.Parameters["@주문일자"].Value = rowDatas[5];
                 #endregion
             }
             try
             {
                 conn.Open();
-                adapter.InsertCommand.ExecuteNonQuery();
-
-                dataSet.Clear();  // 선택한 테이블의 이전 데이터 지우기
-                adapter.Fill(dataSet, NameOfSelectedTab);
-
                 if (NameOfSelectedTab == "고객")
-                    customerDataView.DataSource = dataSet.Tables[NameOfSelectedTab];
+                {
+                    adapter.InsertCommand.ExecuteNonQuery();
+
+                    dataSet.Tables[NameOfSelectedTab].Clear();  // 선택한 테이블의 이전 데이터 지우기
+                    adapter.Fill(dataSet, NameOfSelectedTab);
+                }
                 else if (NameOfSelectedTab == "제품")
-                    productDataView.DataSource = dataSet.Tables[NameOfSelectedTab];
+                {
+                    adapter2.InsertCommand.ExecuteNonQuery();
+
+                    dataSet.Tables[NameOfSelectedTab].Clear();   // 선택한 테이블의 이전 데이터 지우기
+                    adapter2.Fill(dataSet, NameOfSelectedTab);
+                }
                 else if (NameOfSelectedTab == "주문")
-                    orderDataView.DataSource = dataSet.Tables[NameOfSelectedTab];
+                {
+                    adapter3.InsertCommand.ExecuteNonQuery();
+
+                    dataSet.Tables[NameOfSelectedTab].Clear();   // 선택한 테이블의 이전 데이터 지우기
+                    adapter3.Fill(dataSet, NameOfSelectedTab);
+                }
+
+                for (int i = 0; i < Tables.Length; i++)
+                {
+                    if (NameOfSelectedTab == Tables[i].ToString())
+                    {
+                        areaDB.DataSource = dataSet.Tables[NameOfSelectedTab];
+                    } 
+                }
             }
             catch (Exception ex)
             {
@@ -557,37 +568,54 @@ namespace HanbitMart_WinFormUsingDB
             else if (NameOfSelectedTab == "제품")
             {
                 queryString = "UPDATE 제품 SET 제품명=@제품명, 재고량=@재고량, 단가=@단가, 제조업체=@제조업체 WHERE 제품번호=@제품번호";
-                adapter.UpdateCommand = new MySqlCommand(queryString, conn);
-                adapter.UpdateCommand.Parameters.AddWithValue("@제품번호", rowDatas[0]);
-                adapter.UpdateCommand.Parameters.AddWithValue("@제품명", rowDatas[1]);
-                adapter.UpdateCommand.Parameters.AddWithValue("@재고량", rowDatas[2]);
-                adapter.UpdateCommand.Parameters.AddWithValue("@단가", rowDatas[3]);
-                adapter.UpdateCommand.Parameters.AddWithValue("@제조업체", rowDatas[4]);
+                adapter2.UpdateCommand = new MySqlCommand(queryString, conn);
+                adapter2.UpdateCommand.Parameters.AddWithValue("@제품번호", rowDatas[0]);
+                adapter2.UpdateCommand.Parameters.AddWithValue("@제품명", rowDatas[1]);
+                adapter2.UpdateCommand.Parameters.AddWithValue("@재고량", rowDatas[2]);
+                adapter2.UpdateCommand.Parameters.AddWithValue("@단가", rowDatas[3]);
+                adapter2.UpdateCommand.Parameters.AddWithValue("@제조업체", rowDatas[4]);
             }
             else if (NameOfSelectedTab == "주문")
             {
                 queryString = "UPDATE 주문 SET 주문고객=@주문고객, 제품번호=@제품번호, 수량=@수량, 배송지=@배송지, 주문일자=@주문일자 WHERE 주문번호=@주문번호";
-                adapter.UpdateCommand = new MySqlCommand(queryString, conn);
-                adapter.UpdateCommand.Parameters.AddWithValue("@주문번호", rowDatas[0]);
-                adapter.UpdateCommand.Parameters.AddWithValue("@주문고객", rowDatas[1]);
-                adapter.UpdateCommand.Parameters.AddWithValue("@제품번호", rowDatas[2]);
-                adapter.UpdateCommand.Parameters.AddWithValue("@수량", rowDatas[3]);
-                adapter.UpdateCommand.Parameters.AddWithValue("@배송지", rowDatas[4]);
-                adapter.UpdateCommand.Parameters.AddWithValue("@주문일자", rowDatas[5]);
+                adapter3.UpdateCommand = new MySqlCommand(queryString, conn);
+                adapter3.UpdateCommand.Parameters.AddWithValue("@주문번호", rowDatas[0]);
+                adapter3.UpdateCommand.Parameters.AddWithValue("@주문고객", rowDatas[1]);
+                adapter3.UpdateCommand.Parameters.AddWithValue("@제품번호", rowDatas[2]);
+                adapter3.UpdateCommand.Parameters.AddWithValue("@수량", rowDatas[3]);
+                adapter3.UpdateCommand.Parameters.AddWithValue("@배송지", rowDatas[4]);
+                adapter3.UpdateCommand.Parameters.AddWithValue("@주문일자", rowDatas[5]);
             }
             try
             {
                 conn.Open();
-                adapter.UpdateCommand.ExecuteNonQuery();
-
-                dataSet.Clear();  // 선택한 테이블의 이전 데이터 지우기
-                adapter.Fill(dataSet, NameOfSelectedTab);
                 if (NameOfSelectedTab == "고객")
-                    customerDataView.DataSource = dataSet.Tables[NameOfSelectedTab];
+                {
+                    adapter.UpdateCommand.ExecuteNonQuery();
+
+                    dataSet.Tables[NameOfSelectedTab].Clear();   // 선택한 테이블의 이전 데이터 지우기
+                    adapter.Fill(dataSet, NameOfSelectedTab);
+                }
                 else if (NameOfSelectedTab == "제품")
-                    productDataView.DataSource = dataSet.Tables[NameOfSelectedTab];
-                else if(NameOfSelectedTab == "주문") 
-                    orderDataView.DataSource = dataSet.Tables[NameOfSelectedTab];
+                {
+                    adapter2.UpdateCommand.ExecuteNonQuery();
+
+                    dataSet.Tables[NameOfSelectedTab].Clear();   // 선택한 테이블의 이전 데이터 지우기
+                    adapter2.Fill(dataSet, NameOfSelectedTab);
+                }
+                else if (NameOfSelectedTab == "주문")
+                {
+                    adapter3.UpdateCommand.ExecuteNonQuery();
+
+                    dataSet.Tables[NameOfSelectedTab].Clear();   // 선택한 테이블의 이전 데이터 지우기
+                    adapter3.Fill(dataSet, NameOfSelectedTab);
+                }
+
+                for (int i = 0; i < Tables.Length; i++)
+                {
+                    if (NameOfSelectedTab == Tables[i].ToString())
+                        areaDB.DataSource = dataSet.Tables[NameOfSelectedTab];
+                }
             }
             catch (Exception ex)
             {
@@ -612,28 +640,45 @@ namespace HanbitMart_WinFormUsingDB
             else if (NameOfSelectedTab == "제품")
             {
                 queryString = "DELETE FROM 제품 WHERE 제품번호=@제품번호";
-                adapter.DeleteCommand = new MySqlCommand(queryString, conn);
-                adapter.DeleteCommand.Parameters.AddWithValue("@제품번호", PrimaryKey);
+                adapter2.DeleteCommand = new MySqlCommand(queryString, conn);
+                adapter2.DeleteCommand.Parameters.AddWithValue("@제품번호", PrimaryKey);
             }
             else if (NameOfSelectedTab == "주문")
             {
                 queryString = "DELETE FROM 주문 WHERE 주문번호=@주문번호";
-                adapter.DeleteCommand = new MySqlCommand(queryString, conn);
-                adapter.DeleteCommand.Parameters.AddWithValue("@주문번호", PrimaryKey);
+                adapter3.DeleteCommand = new MySqlCommand(queryString, conn);
+                adapter3.DeleteCommand.Parameters.AddWithValue("@주문번호", PrimaryKey);
             }
             try
             {
                 conn.Open();
-                adapter.DeleteCommand.ExecuteNonQuery();
-
-                dataSet.Clear();  // 선택한 테이블의 이전 데이터 지우기
-                adapter.Fill(dataSet, NameOfSelectedTab);
                 if (NameOfSelectedTab == "고객")
-                    customerDataView.DataSource = dataSet.Tables[NameOfSelectedTab];
+                {
+                    adapter.DeleteCommand.ExecuteNonQuery();
+
+                    dataSet.Clear();  // 선택한 테이블의 이전 데이터 지우기
+                    adapter.Fill(dataSet, NameOfSelectedTab);
+                }
                 else if (NameOfSelectedTab == "제품")
-                    productDataView.DataSource = dataSet.Tables[NameOfSelectedTab];
+                {
+                    adapter2.DeleteCommand.ExecuteNonQuery();
+
+                    dataSet.Clear();  // 선택한 테이블의 이전 데이터 지우기
+                    adapter2.Fill(dataSet, NameOfSelectedTab);
+                }
                 else if (NameOfSelectedTab == "주문")
-                    orderDataView.DataSource = dataSet.Tables[NameOfSelectedTab];
+                {
+                    adapter3.DeleteCommand.ExecuteNonQuery();
+
+                    dataSet.Clear();  // 선택한 테이블의 이전 데이터 지우기
+                    adapter3.Fill(dataSet, NameOfSelectedTab);
+                }
+
+                for (int i = 0; i < Tables.Length; i++)
+                {
+                    if (NameOfSelectedTab == Tables[i].ToString())
+                        areaDB.DataSource = dataSet.Tables[NameOfSelectedTab];
+                }
             }
             catch (Exception ex)
             {
@@ -671,6 +716,50 @@ namespace HanbitMart_WinFormUsingDB
             modalForm.Dispose();
         }
 
+        private void areaDB_CellClick(object sender, DataGridViewCellEventArgs e)
+        {
+            IndexOfSelectedRow = e.RowIndex;
+            DataGridViewRow row = areaDB.Rows[IndexOfSelectedRow];
+            NameOfSelectedTab = ManagementTab.SelectedTab.Text;
+
+            Form2 modalForm;
+            if (NameOfSelectedTab == Tables[0] || NameOfSelectedTab == Tables[2])
+            {
+                modalForm = new Form2(
+                    IndexOfSelectedRow,
+                    NameOfSelectedTab,
+                    row.Cells[0].Value.ToString(),
+                    row.Cells[1].Value.ToString(),
+                    row.Cells[2].Value.ToString(),
+                    row.Cells[3].Value.ToString(),
+                    row.Cells[4].Value.ToString(),
+                    row.Cells[5].Value.ToString()
+                )
+                {
+                    Owner = this
+                };
+            }
+            else
+            {
+                modalForm = new Form2(
+                    IndexOfSelectedRow,
+                    NameOfSelectedTab,
+                    row.Cells[0].Value.ToString(),
+                    row.Cells[1].Value.ToString(),
+                    row.Cells[2].Value.ToString(),
+                    row.Cells[3].Value.ToString(),
+                    row.Cells[4].Value.ToString()
+                )
+                {
+                    Owner = this
+                };
+            }
+            // 새로운 폼에 선택된 row의 정보를 담아서 생성
+
+            modalForm.ShowDialog();
+            modalForm.Dispose();
+        }
+
         private void cusClearBtn_Click(object sender, EventArgs e)
         {
             cusIdBox.Clear();
@@ -687,6 +776,7 @@ namespace HanbitMart_WinFormUsingDB
             proProductNumberComboBox.Text = "";
             proProductNameBox.Clear();
             proStockBox_min.Clear();
+            proStockBox_max.Clear();
             proPriceBox_min.Clear();
             proPriceBox_max.Clear();
             proManufacturerComboBox.Text = "";
